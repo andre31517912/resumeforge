@@ -252,6 +252,38 @@ select { cursor: pointer; }
 .ad-countdown-track { width:100%;height:3px;background:var(--paper3);border-radius:2px;overflow:hidden; }
 .ad-countdown-bar { height:100%;width:0%;background:var(--rust);border-radius:2px;transition:width 1s linear; }
 
+
+/* ── Sidebar ad layout (panels 2 & 3) ── */
+.panel-with-sidebar { display: grid; grid-template-columns: 1fr 300px; gap: 24px; align-items: start; }
+.sidebar-ad-col { position: sticky; top: 20px; display: flex; flex-direction: column; gap: 16px; }
+.sidebar-ad-unit { background: white; border: 1.5px solid var(--border); border-radius: var(--radius); overflow: hidden; }
+.sidebar-ad-label { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; color: var(--muted); text-align: center; padding: 5px; border-bottom: 1px solid var(--border); background: var(--paper2); }
+.sidebar-ad-slot { width: 300px; min-height: 250px; display: flex; align-items: center; justify-content: center; background: var(--paper2); }
+.sidebar-ad-placeholder { text-align: center; padding: 20px; }
+.sidebar-ad-placeholder .ad-ph-title { font-size: 12px; font-weight: 700; color: var(--muted); margin-bottom: 3px; }
+.sidebar-ad-placeholder .ad-ph-sub { font-size: 10px; color: var(--border); }
+
+/* ── File limit counter & unlock modal ── */
+.file-limit-bar { display: flex; align-items: center; justify-content: space-between; margin-top: 10px; padding: 8px 12px; background: var(--paper2); border: 1.5px solid var(--border); border-radius: 8px; font-size: 12px; }
+.flb-count { font-family: 'Syne', sans-serif; font-weight: 700; color: var(--text); }
+.flb-count.at-limit { color: var(--rust); }
+.flb-track { flex: 1; height: 4px; background: var(--border); border-radius: 2px; margin: 0 10px; overflow: hidden; }
+.flb-fill { height: 100%; background: var(--sage); border-radius: 2px; transition: width .3s ease; }
+.flb-fill.at-limit { background: var(--rust); }
+.flb-unlock-btn { font-family: 'Syne', sans-serif; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .5px; background: var(--rust); color: white; border: none; border-radius: 5px; padding: 4px 10px; cursor: pointer; transition: background .15s; white-space: nowrap; }
+.flb-unlock-btn:hover { background: var(--rust-light); }
+
+/* ── Unlock-via-ad modal ── */
+.unlock-modal-overlay { position: fixed; inset: 0; z-index: 1001; background: rgba(13,14,18,.75); backdrop-filter: blur(4px); display: none; align-items: center; justify-content: center; }
+.unlock-modal-overlay.visible { display: flex; animation: fadeIn .2s ease; }
+.unlock-modal-box { background: white; border-radius: 14px; padding: 28px; width: 360px; box-shadow: 0 24px 64px rgba(13,14,18,.3); display: flex; flex-direction: column; align-items: center; gap: 16px; animation: slideUp .25s cubic-bezier(.34,1.56,.64,1); }
+.unlock-modal-icon { font-size: 36px; }
+.unlock-modal-title { font-family: 'Syne', sans-serif; font-size: 17px; font-weight: 800; text-align: center; color: var(--text); }
+.unlock-modal-sub { font-size: 13px; color: var(--muted); text-align: center; line-height: 1.5; }
+.unlock-modal-reward { background: var(--paper2); border: 1.5px solid var(--border); border-radius: 8px; padding: 10px 16px; font-size: 13px; font-weight: 600; color: var(--sage); text-align: center; width: 100%; }
+.unlock-ad-slot { width: 300px; height: 250px; position: relative; background: var(--paper2); border: 1.5px dashed var(--border); border-radius: 8px; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+.unlock-countdown-track { width: 100%; height: 4px; background: var(--paper3); border-radius: 2px; overflow: hidden; }
+.unlock-countdown-bar { height: 100%; width: 0%; background: var(--sage); border-radius: 2px; transition: width 1s linear; }
 /* ── Toast ── */
 .toast { position: fixed; bottom: 24px; right: 24px; background: var(--ink); color: var(--paper); border-radius: 8px; padding: 11px 16px; font-size: 13px; display: flex; align-items: center; gap: 8px; box-shadow: 0 8px 24px rgba(13,14,18,.2); transform: translateY(80px); opacity: 0; transition: all .3s cubic-bezier(.34,1.56,.64,1); z-index: 999; pointer-events: none; }
 .toast.on { transform: translateY(0); opacity: 1; }
@@ -286,6 +318,11 @@ select { cursor: pointer; }
           <div class="uz-title">Drop resumes here</div>
           <div class="uz-hint">PDF, DOCX, TXT · Multiple versions welcome</div>
         </div>
+        <div class="file-limit-bar" id="file-limit-bar">
+          <span class="flb-count" id="flb-count">0 / 10 files</span>
+          <div class="flb-track"><div class="flb-fill" id="flb-fill" style="width:0%"></div></div>
+          <button class="flb-unlock-btn" id="flb-unlock-btn" onclick="showUnlockModal()" style="display:none">+ Watch Ad to Unlock 5 More</button>
+        </div>
         <div class="file-list" id="resume-list"></div>
         <div id="parse-btn-wrap" style="margin-top:13px;display:none">
           <button class="btn btn-ink" onclick="parseAllResumes()" id="parse-btn">🔍 Re-parse All Files</button>
@@ -317,6 +354,8 @@ select { cursor: pointer; }
     <div class="panel-heading">Add the <em>job description</em></div>
     <div class="panel-sub">Paste a URL to auto-fetch, or paste the text directly — useful for LinkedIn, TikTok, and sites that block scraping.</div>
 
+    <div class="panel-with-sidebar">
+    <div><!-- main col -->
     <div class="jd-wrapper">
       <div>
         <div class="jd-mode-toggle">
@@ -397,6 +436,25 @@ select { cursor: pointer; }
       </div>
     </div>
 
+    </div><!-- /jd-wrapper -->
+    </div><!-- /main col -->
+    <div class="sidebar-ad-col">
+      <div class="sidebar-ad-unit">
+        <div class="sidebar-ad-label">Advertisement</div>
+        <div class="sidebar-ad-slot">
+          <ins class="adsbygoogle" style="display:block;width:300px;height:250px;"
+               data-ad-client="ca-pub-XXXXXXXXXXXXXXXX"
+               data-ad-slot="YYYYYYYYYY"
+               data-ad-format="fixed"></ins>
+          <div class="sidebar-ad-placeholder" id="sidebar-ad-p2-ph">
+            <div class="ad-ph-title">300 × 250</div>
+            <div class="ad-ph-sub">AdSense slot</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    </div><!-- /panel-with-sidebar -->
+
     <div class="nav-row">
       <button class="btn btn-outline" onclick="nav(1)">← Back</button>
       <button class="btn btn-primary" onclick="showAdThenNavigate()">Next: Generate →</button>
@@ -408,6 +466,8 @@ select { cursor: pointer; }
     <div class="panel-heading">Generate your <em>resume</em></div>
     <div class="panel-sub">AI writes your resume as LaTeX — professional typesetting with a live preview. Download as PDF when ready.</div>
 
+    <div class="panel-with-sidebar">
+    <div><!-- main col -->
     <div class="gen-layout">
       <div class="gen-controls">
         <div class="gc-head">Configuration</div>
@@ -476,6 +536,38 @@ select { cursor: pointer; }
       </div>
     </div>
 
+    </div><!-- /gen-layout -->
+    </div><!-- /main col -->
+    <div class="sidebar-ad-col">
+      <div class="sidebar-ad-unit">
+        <div class="sidebar-ad-label">Advertisement</div>
+        <div class="sidebar-ad-slot">
+          <ins class="adsbygoogle" style="display:block;width:300px;height:250px;"
+               data-ad-client="ca-pub-XXXXXXXXXXXXXXXX"
+               data-ad-slot="ZZZZZZZZZZ"
+               data-ad-format="fixed"></ins>
+          <div class="sidebar-ad-placeholder" id="sidebar-ad-p3-ph">
+            <div class="ad-ph-title">300 × 250</div>
+            <div class="ad-ph-sub">AdSense slot</div>
+          </div>
+        </div>
+      </div>
+      <div class="sidebar-ad-unit">
+        <div class="sidebar-ad-label">Advertisement</div>
+        <div class="sidebar-ad-slot" style="min-height:90px;height:90px;">
+          <ins class="adsbygoogle" style="display:block;width:300px;height:90px;"
+               data-ad-client="ca-pub-XXXXXXXXXXXXXXXX"
+               data-ad-slot="WWWWWWWWWW"
+               data-ad-format="fixed"></ins>
+          <div class="sidebar-ad-placeholder" id="sidebar-ad-p3-ph2">
+            <div class="ad-ph-title">300 × 90</div>
+            <div class="ad-ph-sub">AdSense slot</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    </div><!-- /panel-with-sidebar -->
+
     <div class="nav-row">
       <button class="btn btn-outline" onclick="nav(2)">← Back</button>
       <div></div>
@@ -497,6 +589,12 @@ var S = {
   targetRole: '',
   latexSource: ''
 };
+
+// File upload limits
+var FREE_LIMIT     = 10;   // slots without watching an ad
+var UNLOCK_BONUS   = 5;    // extra slots per ad watched
+var fileSlotLimit  = FREE_LIMIT; // increases when user watches unlock ad
+var unlockTimer    = null;
 
 // ─────────────────────────────────────────────────────────────
 // NAV
@@ -529,20 +627,29 @@ function onResumeFiles(e) {
 
 function addFiles(files) {
   var added = 0;
-  files.forEach(function(f){
-    if (!S.files.find(function(x){ return x.name === f.name; })) { S.files.push(f); added++; }
+  var blocked = 0;
+  files.forEach(function(f) {
+    if (S.files.find(function(x){ return x.name === f.name; })) return;
+    if (S.files.length >= fileSlotLimit) { blocked++; return; }
+    S.files.push(f); added++;
   });
   renderFileList();
+  updateFileLimitBar();
   if (S.files.length) {
     document.getElementById('upload-hint').style.display = 'none';
     document.getElementById('parse-btn-wrap').style.display = 'block';
     if (added > 0) { toast('ok', added + ' file(s) added'); parseAllResumes(); }
+  }
+  if (blocked > 0) {
+    toast('err', 'Limit reached — watch an ad to unlock 5 more slots');
+    showUnlockModal();
   }
 }
 
 function removeFile(i) {
   S.files.splice(i, 1);
   renderFileList();
+  updateFileLimitBar();
   if (!S.files.length) {
     S.parsedProfile = '';
     document.getElementById('parsed-preview').classList.remove('visible');
@@ -553,13 +660,65 @@ function removeFile(i) {
 
 function renderFileList() {
   var list = document.getElementById('resume-list');
-  list.innerHTML = S.files.map(function(f, i){
+  list.innerHTML = S.files.map(function(f, i) {
     return '<div class="file-card" id="fc-'+i+'">' +
       '<span class="fc-icon">'+fileIcon(f.name)+'</span>' +
       '<div class="fc-info"><div class="fc-name">'+f.name+'</div><div class="fc-status" id="fcs-'+i+'">'+fmtSize(f.size)+'</div></div>' +
       '<button class="fc-remove" onclick="removeFile('+i+')">✕</button></div>';
   }).join('');
 }
+
+function updateFileLimitBar() {
+  var count   = S.files.length;
+  var limit   = fileSlotLimit;
+  var atLimit = count >= limit;
+  var pct     = Math.min((count / limit) * 100, 100);
+  var countEl = document.getElementById('flb-count');
+  var fillEl  = document.getElementById('flb-fill');
+  var btnEl   = document.getElementById('flb-unlock-btn');
+  if (!countEl) return;
+  countEl.textContent = count + ' / ' + limit + ' files';
+  countEl.className   = 'flb-count' + (atLimit ? ' at-limit' : '');
+  fillEl.style.width  = pct + '%';
+  fillEl.className    = 'flb-fill' + (atLimit ? ' at-limit' : '');
+  btnEl.style.display = atLimit ? 'inline-block' : 'none';
+}
+
+function showUnlockModal() {
+  var modal   = document.getElementById('unlock-modal');
+  var bar     = document.getElementById('unlock-bar');
+  var skipBtn = document.getElementById('unlock-skip-btn');
+  var WAIT    = 5;
+  var elapsed = 0;
+  modal.classList.add('visible');
+  skipBtn.disabled = true;
+  skipBtn.textContent = 'Watch ad to unlock (' + WAIT + 's)';
+  bar.style.width = '0%';
+  skipBtn.style.background = '';
+  try { if (window.adsbygoogle) (window.adsbygoogle = window.adsbygoogle || []).push({}); } catch(e) {}
+  clearInterval(unlockTimer);
+  unlockTimer = setInterval(function() {
+    elapsed++;
+    bar.style.width = Math.min((elapsed / WAIT) * 100, 100) + '%';
+    if (elapsed >= WAIT) {
+      clearInterval(unlockTimer);
+      skipBtn.disabled = false;
+      skipBtn.textContent = '\u2713 Unlock 5 More Slots';
+      skipBtn.style.background = 'var(--sage)';
+    } else {
+      skipBtn.textContent = 'Watch ad to unlock (' + (WAIT - elapsed) + 's)';
+    }
+  }, 1000);
+}
+
+function closeUnlockModal() {
+  clearInterval(unlockTimer);
+  fileSlotLimit += UNLOCK_BONUS;
+  document.getElementById('unlock-modal').classList.remove('visible');
+  updateFileLimitBar();
+  toast('ok', '5 extra slots unlocked! You can now upload up to ' + fileSlotLimit + ' files.');
+}
+
 
 function fileIcon(n) {
   if (n.endsWith('.pdf')) return '📑';
@@ -1098,35 +1257,78 @@ function latexToHTML(src) {
 }
 
 // ─────────────────────────────────────────────────────────────
-// API — routes through /api/proxy (key lives server-side)
+// API — proxy on Vercel, direct call with stored key locally
 // ─────────────────────────────────────────────────────────────
+var _localApiKey = '';
+
+
+
+function getLocalKey() {
+  if (_localApiKey) return _localApiKey;
+  var stored = sessionStorage.getItem('rf_dev_key');
+  if (stored) { _localApiKey = stored; return stored; }
+  var key = prompt(
+    'LOCAL DEV MODE\n\n' +
+    'Enter your Anthropic API key to test locally.\n' +
+    'This is only stored in this browser tab — never sent anywhere except Anthropic directly.\n\n' +
+    'On Vercel, the key lives server-side and this prompt never appears.'
+  );
+  if (!key || !key.trim()) throw new Error('No API key provided. Reload and enter your key to continue.');
+  key = key.trim();
+  _localApiKey = key;
+  sessionStorage.setItem('rf_dev_key', key);
+  return key;
+}
+
+async function doFetch(body) {
+  // Always try the proxy first (works on Vercel)
+  // Fall back to direct call with local key only when proxy doesn't exist (local file dev)
+  try {
+    var res = await fetch('/api/proxy', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    });
+    // 404 means we're running as a local file with no server — fall through to local key
+    if (res.status === 404) throw new Error('NO_PROXY');
+    var data = await res.json();
+    if (data.error) throw new Error(typeof data.error === 'string' ? data.error : JSON.stringify(data.error));
+    return data;
+  } catch(e) {
+    if (e.message !== 'NO_PROXY' && !e.message.includes('Failed to fetch')) throw e;
+    // Local dev fallback — prompt for API key
+    var key = getLocalKey();
+    var r = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': key,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true'
+      },
+      body: JSON.stringify(body)
+    });
+    return await r.json();
+  }
+}
+
 async function apiCall(prompt, maxTokens) {
-  var res = await fetch('/api/proxy', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      model: 'claude-sonnet-4-20250514',
-      max_tokens: maxTokens || 1000,
-      messages: [{ role: 'user', content: prompt }]
-    })
+  var data = await doFetch({
+    model: 'claude-sonnet-4-20250514',
+    max_tokens: maxTokens || 1000,
+    messages: [{ role: 'user', content: prompt }]
   });
-  var data = await res.json();
   if (data.error) throw new Error(data.error.message);
   return (data.content || []).map(function(b){ return b.text || ''; }).join('');
 }
 
 async function apiCallWithSearch(prompt, maxTokens) {
-  var res = await fetch('/api/proxy', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      model: 'claude-sonnet-4-20250514',
-      max_tokens: maxTokens || 1000,
-      tools: [{ type: 'web_search_20250305', name: 'web_search' }],
-      messages: [{ role: 'user', content: prompt }]
-    })
+  var data = await doFetch({
+    model: 'claude-sonnet-4-20250514',
+    max_tokens: maxTokens || 1000,
+    tools: [{ type: 'web_search_20250305', name: 'web_search' }],
+    messages: [{ role: 'user', content: prompt }]
   });
-  var data = await res.json();
   if (data.error) throw new Error(data.error.message);
   return (data.content || []).map(function(b){ return b.text || ''; }).filter(Boolean).join('');
 }
@@ -1199,7 +1401,36 @@ function toast(type,msg){
       <div class="ad-modal-title">ResumeForge is free — ads keep it that way</div>
     </div>
 
-    <!-- Google AdSense slot -->
+    <!-- ═══ UNLOCK EXTRA UPLOADS MODAL ═══ -->
+<div class="unlock-modal-overlay" id="unlock-modal">
+  <div class="unlock-modal-box">
+    <div class="unlock-modal-icon">🎬</div>
+    <div class="unlock-modal-title">Watch an ad to unlock 5 more slots</div>
+    <div class="unlock-modal-sub">You've used all 10 free upload slots. Watch a short ad to unlock 5 more for this session.</div>
+    <div class="unlock-modal-reward">✓ +5 file slots unlocked after watching</div>
+    <div class="unlock-ad-slot">
+      <ins class="adsbygoogle" style="display:block;width:300px;height:250px;"
+           data-ad-client="ca-pub-XXXXXXXXXXXXXXXX"
+           data-ad-slot="UUUUUUUUUU"
+           data-ad-format="fixed"></ins>
+      <div class="sidebar-ad-placeholder">
+        <div class="ad-ph-title">300 × 250 · Ad plays here</div>
+        <div class="ad-ph-sub">Replace with your AdSense slot ID</div>
+      </div>
+    </div>
+    <div class="unlock-countdown-track" style="width:100%">
+      <div class="unlock-countdown-bar" id="unlock-bar"></div>
+    </div>
+    <button class="btn btn-primary" id="unlock-skip-btn" onclick="closeUnlockModal()" disabled style="width:100%;justify-content:center">
+      Watch ad to unlock (5s)
+    </button>
+    <button class="btn btn-outline" onclick="document.getElementById('unlock-modal').classList.remove('visible')" style="width:100%;justify-content:center;font-size:11px">
+      Cancel
+    </button>
+  </div>
+</div>
+
+<!-- Google AdSense slot -->
     <!-- REPLACE data-ad-client and data-ad-slot with your real values from AdSense -->
     <div class="ad-slot-wrap">
       <ins class="adsbygoogle"
@@ -1227,6 +1458,35 @@ function toast(type,msg){
       Skip in 5s
     </button>
 
+  </div>
+</div>
+
+<!-- ═══ UNLOCK EXTRA UPLOADS MODAL ═══ -->
+<div class="unlock-modal-overlay" id="unlock-modal">
+  <div class="unlock-modal-box">
+    <div class="unlock-modal-icon">🎬</div>
+    <div class="unlock-modal-title">Watch an ad to unlock 5 more slots</div>
+    <div class="unlock-modal-sub">You've used all 10 free upload slots. Watch a short ad to unlock 5 more for this session.</div>
+    <div class="unlock-modal-reward">✓ +5 file slots unlocked after watching</div>
+    <div class="unlock-ad-slot">
+      <ins class="adsbygoogle" style="display:block;width:300px;height:250px;"
+           data-ad-client="ca-pub-XXXXXXXXXXXXXXXX"
+           data-ad-slot="UUUUUUUUUU"
+           data-ad-format="fixed"></ins>
+      <div class="sidebar-ad-placeholder">
+        <div class="ad-ph-title">300 × 250 · Ad plays here</div>
+        <div class="ad-ph-sub">Replace with your AdSense slot ID</div>
+      </div>
+    </div>
+    <div class="unlock-countdown-track" style="width:100%">
+      <div class="unlock-countdown-bar" id="unlock-bar"></div>
+    </div>
+    <button class="btn btn-primary" id="unlock-skip-btn" onclick="closeUnlockModal()" disabled style="width:100%;justify-content:center">
+      Watch ad to unlock (5s)
+    </button>
+    <button class="btn btn-outline" onclick="document.getElementById('unlock-modal').classList.remove('visible')" style="width:100%;justify-content:center;font-size:11px">
+      Cancel
+    </button>
   </div>
 </div>
 
