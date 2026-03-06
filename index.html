@@ -52,8 +52,8 @@ header { padding: 40px 0 34px; display: flex; justify-content: space-between; al
 .progress-step.done .ps-label { color: var(--steel); }
 
 /* Panels */
-.panel { display: none; }
-.panel.active { display: block; animation: appear .3s ease; }
+.panel { display: none; overflow: hidden; }
+.panel.active { display: block; animation: appear .3s ease; overflow: visible; }
 @keyframes appear { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
 .panel-heading { font-family: 'Syne',sans-serif; font-size: 36px; font-weight: 800; letter-spacing: -1.5px; line-height: 1.1; margin-bottom: 6px; }
 .panel-heading em { color: var(--rust); font-style: normal; }
@@ -62,7 +62,11 @@ header { padding: 40px 0 34px; display: flex; justify-content: space-between; al
 /* Layout */
 .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
 .jd-wrapper { display: grid; grid-template-columns: 1fr 360px; gap: 22px; align-items: start; }
-.gen-layout { display: grid; grid-template-columns: 240px 1fr; gap: 20px; align-items: start; }
+/* ── Generate panel controls card (mirrors gen-controls from original) ── */
+.gen-controls-card { background: white; border: 1.5px solid var(--border); border-radius: var(--radius); overflow: hidden; position: sticky; top: 20px; }
+.gcc-head { background: var(--ink); padding: 13px 16px; color: var(--paper); font-family: 'Syne',sans-serif; font-size: 14px; font-weight: 700; }
+.gcc-body { padding: 15px; display: flex; flex-direction: column; gap: 13px; }
+.gen-output-area { position: relative; }
 
 /* Upload zone */
 .upload-zone { border: 2px dashed var(--border); border-radius: var(--radius); padding: 36px 28px; text-align: center; cursor: pointer; transition: all .2s; background: white; position: relative; overflow: hidden; }
@@ -200,9 +204,6 @@ select { cursor: pointer; }
 .nav-row { display: flex; justify-content: space-between; align-items: center; margin-top: 34px; padding-top: 24px; border-top: 1.5px solid var(--border); }
 
 /* Gen controls */
-.gen-controls { background: white; border: 1.5px solid var(--border); border-radius: var(--radius); overflow: hidden; position: sticky; top: 20px; }
-.gc-head { background: var(--ink); padding: 13px 16px; color: var(--paper); font-family: 'Syne',sans-serif; font-size: 14px; font-weight: 700; }
-.gc-body { padding: 15px; display: flex; flex-direction: column; gap: 13px; }
 .readiness-list { display: flex; flex-direction: column; gap: 7px; }
 .readiness-item { display: flex; align-items: center; gap: 9px; }
 .ri-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
@@ -354,8 +355,6 @@ select { cursor: pointer; }
     <div class="panel-heading">Add the <em>job description</em></div>
     <div class="panel-sub">Paste a URL to auto-fetch, or paste the text directly — useful for LinkedIn, TikTok, and sites that block scraping.</div>
 
-    <div class="panel-with-sidebar">
-    <div><!-- main col -->
     <div class="jd-wrapper">
       <div>
         <div class="jd-mode-toggle">
@@ -422,6 +421,21 @@ select { cursor: pointer; }
             </div>
           </div>
         </div>
+
+        <!-- Ad below JD input -->
+        <div class="sidebar-ad-unit" style="margin-top:16px;">
+          <div class="sidebar-ad-label">Advertisement</div>
+          <div class="sidebar-ad-slot">
+            <ins class="adsbygoogle" style="display:block;width:300px;height:250px;"
+                 data-ad-client="ca-pub-XXXXXXXXXXXXXXXX"
+                 data-ad-slot="YYYYYYYYYY"
+                 data-ad-format="fixed"></ins>
+            <div class="sidebar-ad-placeholder">
+              <div class="ad-ph-title">300 × 250</div>
+              <div class="ad-ph-sub">AdSense slot</div>
+            </div>
+          </div>
+        </div>
       </div>
 
       <div class="jd-analysis-card" id="jd-analysis-card">
@@ -436,25 +450,6 @@ select { cursor: pointer; }
       </div>
     </div>
 
-    </div><!-- /jd-wrapper -->
-    </div><!-- /main col -->
-    <div class="sidebar-ad-col">
-      <div class="sidebar-ad-unit">
-        <div class="sidebar-ad-label">Advertisement</div>
-        <div class="sidebar-ad-slot">
-          <ins class="adsbygoogle" style="display:block;width:300px;height:250px;"
-               data-ad-client="ca-pub-XXXXXXXXXXXXXXXX"
-               data-ad-slot="YYYYYYYYYY"
-               data-ad-format="fixed"></ins>
-          <div class="sidebar-ad-placeholder" id="sidebar-ad-p2-ph">
-            <div class="ad-ph-title">300 × 250</div>
-            <div class="ad-ph-sub">AdSense slot</div>
-          </div>
-        </div>
-      </div>
-    </div>
-    </div><!-- /panel-with-sidebar -->
-
     <div class="nav-row">
       <button class="btn btn-outline" onclick="nav(1)">← Back</button>
       <button class="btn btn-primary" onclick="showAdThenNavigate()">Next: Generate →</button>
@@ -464,48 +459,65 @@ select { cursor: pointer; }
   <!-- ═══ PANEL 3 ═══ -->
   <div class="panel" id="panel-3">
     <div class="panel-heading">Generate your <em>resume</em></div>
-    <div class="panel-sub">AI writes your resume as LaTeX — professional typesetting with a live preview. Download as PDF when ready.</div>
+    <div class="panel-sub">AI writes your resume as LaTeX — professional typesetting. Configure and click Generate, then download as PDF.</div>
 
-    <div class="panel-with-sidebar">
-    <div><!-- main col -->
-    <div class="gen-layout">
-      <div class="gen-controls">
-        <div class="gc-head">Configuration</div>
-        <div class="gc-body">
-          <div>
-            <div class="field-label" style="margin-bottom:8px">Readiness</div>
-            <div class="readiness-list" id="readiness-list"></div>
+    <div class="two-col">
+      <!-- Left: config controls -->
+      <div>
+        <div class="gen-controls-card">
+          <div class="gcc-head">Configuration</div>
+          <div class="gcc-body">
+            <div>
+              <div class="field-label" style="margin-bottom:8px">Readiness</div>
+              <div class="readiness-list" id="readiness-list"></div>
+            </div>
+            <div class="field">
+              <label class="field-label">Tone</label>
+              <select id="tone-sel">
+                <option value="professional">Professional &amp; Concise</option>
+                <option value="dynamic" selected>Dynamic &amp; Achievement-led</option>
+                <option value="technical">Technical &amp; Detailed</option>
+                <option value="executive">Executive / Leadership</option>
+                <option value="creative">Creative &amp; Narrative</option>
+              </select>
+            </div>
+            <div class="field">
+              <label class="field-label">Format</label>
+              <select id="format-sel">
+                <option value="chronological" selected>Chronological</option>
+                <option value="hybrid">Hybrid (Skills + Experience)</option>
+                <option value="functional">Functional / Skills-first</option>
+              </select>
+            </div>
+            <div class="field">
+              <label class="field-label">Length</label>
+              <select id="length-sel">
+                <option value="1page">1 Page</option>
+                <option value="2page" selected>1–2 Pages</option>
+                <option value="detailed">Full Detail</option>
+              </select>
+            </div>
+            <button class="btn btn-primary btn-lg" onclick="generateResume()" id="gen-btn">✨ Generate Resume</button>
           </div>
-          <div class="field">
-            <label class="field-label">Tone</label>
-            <select id="tone-sel">
-              <option value="professional">Professional &amp; Concise</option>
-              <option value="dynamic" selected>Dynamic &amp; Achievement-led</option>
-              <option value="technical">Technical &amp; Detailed</option>
-              <option value="executive">Executive / Leadership</option>
-              <option value="creative">Creative &amp; Narrative</option>
-            </select>
+        </div>
+
+        <!-- Ad below controls on left -->
+        <div class="sidebar-ad-unit" style="margin-top:16px;">
+          <div class="sidebar-ad-label">Advertisement</div>
+          <div class="sidebar-ad-slot">
+            <ins class="adsbygoogle" style="display:block;width:300px;height:250px;"
+                 data-ad-client="ca-pub-XXXXXXXXXXXXXXXX"
+                 data-ad-slot="ZZZZZZZZZZ"
+                 data-ad-format="fixed"></ins>
+            <div class="sidebar-ad-placeholder">
+              <div class="ad-ph-title">300 × 250</div>
+              <div class="ad-ph-sub">AdSense slot</div>
+            </div>
           </div>
-          <div class="field">
-            <label class="field-label">Format</label>
-            <select id="format-sel">
-              <option value="chronological" selected>Chronological</option>
-              <option value="hybrid">Hybrid (Skills + Experience)</option>
-              <option value="functional">Functional / Skills-first</option>
-            </select>
-          </div>
-          <div class="field">
-            <label class="field-label">Length</label>
-            <select id="length-sel">
-              <option value="1page">1 Page</option>
-              <option value="2page" selected>1–2 Pages</option>
-              <option value="detailed">Full Detail</option>
-            </select>
-          </div>
-          <button class="btn btn-primary btn-lg" onclick="generateResume()" id="gen-btn">✨ Generate Resume</button>
         </div>
       </div>
 
+      <!-- Right: output area -->
       <div>
         <div class="loader-wrap" id="gen-loader">
           <div class="spinner"></div>
@@ -530,43 +542,11 @@ select { cursor: pointer; }
           </div>
           <div class="ol-editor-pane" style="display:flex;flex-direction:column;">
             <div class="ol-pane-label">LaTeX Source — edit freely, then Download PDF</div>
-            <textarea class="ol-editor" id="latex-editor" spellcheck="false" style="min-height:580px;"></textarea>
+            <textarea class="ol-editor" id="latex-editor" spellcheck="false" style="min-height:520px;"></textarea>
           </div>
         </div>
       </div>
     </div>
-
-    </div><!-- /gen-layout -->
-    </div><!-- /main col -->
-    <div class="sidebar-ad-col">
-      <div class="sidebar-ad-unit">
-        <div class="sidebar-ad-label">Advertisement</div>
-        <div class="sidebar-ad-slot">
-          <ins class="adsbygoogle" style="display:block;width:300px;height:250px;"
-               data-ad-client="ca-pub-XXXXXXXXXXXXXXXX"
-               data-ad-slot="ZZZZZZZZZZ"
-               data-ad-format="fixed"></ins>
-          <div class="sidebar-ad-placeholder" id="sidebar-ad-p3-ph">
-            <div class="ad-ph-title">300 × 250</div>
-            <div class="ad-ph-sub">AdSense slot</div>
-          </div>
-        </div>
-      </div>
-      <div class="sidebar-ad-unit">
-        <div class="sidebar-ad-label">Advertisement</div>
-        <div class="sidebar-ad-slot" style="min-height:90px;height:90px;">
-          <ins class="adsbygoogle" style="display:block;width:300px;height:90px;"
-               data-ad-client="ca-pub-XXXXXXXXXXXXXXXX"
-               data-ad-slot="WWWWWWWWWW"
-               data-ad-format="fixed"></ins>
-          <div class="sidebar-ad-placeholder" id="sidebar-ad-p3-ph2">
-            <div class="ad-ph-title">300 × 90</div>
-            <div class="ad-ph-sub">AdSense slot</div>
-          </div>
-        </div>
-      </div>
-    </div>
-    </div><!-- /panel-with-sidebar -->
 
     <div class="nav-row">
       <button class="btn btn-outline" onclick="nav(2)">← Back</button>
